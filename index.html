@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+      /* Кнопка Старт нужна, так как браузеры блокируют авто-воспроизведение видео со звуком */
+      #start-button {
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        padding: 10px 20px; background: white; border: 2px solid black;
+        border-radius: 30px; z-index: 1000; font-family: sans-serif; font-weight: bold;
+        display: none; /* Скрыта по умолчанию */
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div id="start-button">НАЖМИ, ЧТОБЫ УСЛЫШАТЬ</div>
+
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video id="vid" src="./video.mp4" webkit-playsinline playsinline muted loop></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-plane src="#vid" position="0 0 0" height="1" width="1" rotation="0 0 0"></a-plane>
+      </a-entity>
+      
+    </a-scene>
+
+    <script>
+      // Скрипт для обработки нажатия и запуска видео
+      const sceneEl = document.querySelector('a-scene');
+      const vid = document.querySelector('#vid');
+      const btn = document.querySelector('#start-button');
+
+      sceneEl.addEventListener('arReady', (event) => {
+        // Когда AR готов, показываем кнопку или инструкцию
+        console.log("AR готов");
+      });
+
+      // Когда камера нашла стикер
+      sceneEl.addEventListener('targetFound', event => {
+        console.log("Стикер найден");
+        btn.style.display = 'block'; // Показываем кнопку, если звук не включен
+        vid.play();
+      });
+
+      // Когда камера потеряла стикер
+      sceneEl.addEventListener('targetLost', event => {
+        console.log("Стикер потерян");
+        vid.pause();
+        btn.style.display = 'none';
+      });
+      
+      // Обработка клика для включения звука
+      btn.addEventListener("click", event => {
+        vid.muted = false; // Включаем звук
+        btn.style.display = 'none'; // Скрываем кнопку
+      });
+    </script>
+  </body>
+</html>
